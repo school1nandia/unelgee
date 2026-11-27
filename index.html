@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сэдэв: Зургийн давхарга — Ангийн Дүнгийн Үнэлгээ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts with full Cyrillic support (Nunito & Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for celebratory bursts -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome for clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for sleek UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Remove number input arrows for cleaner look */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            70% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: popIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.8); }
+        }
+        .glow-gold {
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-7px) rotate(1.5deg); }
+        }
+        .animate-float {
+            animation: floatSlow 3.6s ease-in-out infinite;
+        }
+
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(250%) skewX(-15deg); }
+        }
+        .animate-shimmer {
+            animation: shimmerSweep 3s infinite;
+        }
+
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 60;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Fullscreen Canvas for Custom Fireworks -->
+    <canvas id="fireworks-canvas"></canvas>
+
+    <!-- Toast Notification Container (Replaces alert()) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Title & Subtitle with Stacked Layers Graphic -->
+                <div class="flex items-center gap-3.5">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-200 shrink-0 relative overflow-hidden">
+                        <!-- Stacked Layers SVG Icon -->
+                        <svg class="w-9 h-9" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 6L42 15L24 24L6 15L24 6Z" fill="#FDE047" stroke="#FFF" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M6 24L24 33L42 24" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M6 33L24 42L42 33" stroke="#F472B6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2 mb-0.5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-indigo-100 to-pink-100 text-indigo-800 border border-indigo-200/80">
+                                <i class="fa-solid fa-layer-group text-pink-600"></i>
+                                Сэдэв: Зургийн давхарга
+                            </span>
+                            <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+                                <i class="fa-solid fa-palette text-amber-600"></i> График дизайн
+                            </span>
+                        </div>
+                        <h1 class="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                            Ангийн Дүнгийн Үнэлгээ & Гүйцэтгэл
+                        </h1>
+                        <p class="text-xs sm:text-sm text-slate-500 font-medium">
+                            «Зургийн давхарга» хичээлийн 20 сурагчийн дүнгийн дундаж болон гүйцэтгэлийн самбар
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Quick Action Controls -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="sound-toggle-btn" onclick="toggleSound()" title="Салютын дуу асаах/унтраах" class="inline-flex items-center gap-1.5 px-3 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs sm:text-sm rounded-xl border border-amber-200 transition-all cursor-pointer">
+                        <i id="sound-icon" class="fa-solid fa-volume-high text-amber-600"></i>
+                        <span id="sound-label" class="hidden sm:inline">Дуу: Асаалттай</span>
+                    </button>
+
+                    <div class="relative inline-block">
+                        <button id="sample-dropdown-btn" onclick="toggleSampleMenu()" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-sm rounded-xl border border-indigo-200 transition-all cursor-pointer">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Жишээ дүн оруулах</span>
+                            <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+                        </button>
+                        <!-- Sample Preset Dropdown -->
+                        <div id="sample-menu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-40">
+                            <div class="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Турших хувилбар сонгох</div>
+                            <button onclick="fillSampleGrades('high')" class="w-full text-left px-4 py-2.5 text-sm hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 flex items-center justify-between transition-colors">
+                                <span><i class="fa-solid fa-trophy text-amber-500 mr-2"></i>Өндөр амжилт (80-100%)</span>
+                                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Салют</span>
+                            </button>
+                            <button onclick="fillSampleGrades('medium')" class="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 text-slate-700 hover:text-blue-700 flex items-center justify-between transition-colors">
+                                <span><i class="fa-solid fa-star-half-stroke text-blue-500 mr-2"></i>Дундаж амжилт (60-79%)</span>
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Салют</span>
+                            </button>
+                            <button onclick="fillSampleGrades('low')" class="w-full text-left px-4 py-2.5 text-sm hover:bg-rose-50 text-slate-700 hover:text-rose-700 flex items-center justify-between transition-colors">
+                                <span><i class="fa-solid fa-book-open text-rose-500 mr-2"></i>Анхаарах шаардлагатай (&lt;60%)</span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">Урам</span>
+                            </button>
+                            <div class="border-t border-slate-100 my-1"></div>
+                            <button onclick="fillSampleGrades('random')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 text-slate-700 flex items-center transition-colors">
+                                <i class="fa-solid fa-shuffle text-indigo-500 mr-2"></i>Санамсаргүй оноо бөглөх
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="clearAllGrades()" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-semibold text-sm rounded-xl border border-slate-200 hover:border-rose-200 transition-all cursor-pointer">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Цэвэрлэх</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Column: Student List & Grade Input (7 cols on lg) -->
+            <div class="lg:col-span-7 bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-users"></i>
+                        </span>
+                        <div>
+                            <h2 class="font-heading font-bold text-base sm:text-lg text-slate-800">Сурагчдын жагсаалт</h2>
+                            <p class="text-xs text-slate-500">0 - 100 хооронд үнэлгээний оноог оруулна уу</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span id="student-count-badge" class="text-xs font-bold px-3 py-1.5 rounded-full bg-slate-200/70 text-slate-700">
+                            Нийт: 20 сурагч
+                        </span>
+                        <button onclick="openBulkPasteModal()" title="Excel-ээс оноо олноор хуулах" class="px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-paste"></i>
+                            <span class="hidden sm:inline">Олноор хуулах</span>
+                        </button>
+                        <button onclick="addStudentRow()" title="Сурагч нэмэх" class="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-plus"></i>
+                            <span class="hidden sm:inline">Нэмэх</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Header -->
+                <div class="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 bg-slate-100/80 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/60">
+                    <div class="col-span-1 text-center">№</div>
+                    <div class="col-span-5 sm:col-span-5">Сурагчийн нэр</div>
+                    <div class="col-span-3 sm:col-span-3 text-center">Оноо (0-100)</div>
+                    <div class="col-span-2 sm:col-span-2 text-center">Үнэлгээ</div>
+                    <div class="col-span-1 text-center"></div>
+                </div>
+
+                <!-- Student Rows Container -->
+                <div id="students-container" class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+                    <!-- Rows injected dynamically by JS -->
+                </div>
+
+                <!-- Bottom Bar inside card -->
+                <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                    <span><i class="fa-regular fa-lightbulb text-amber-500 mr-1.5"></i>Зөвлөмж: <b>Enter</b> эсвэл <b>↓ / ↑</b> сум дарж дараагийн сурагч руу хурдан шилжинэ үү.</span>
+                    <button onclick="resetToTwenty()" class="text-indigo-600 hover:underline font-semibold cursor-pointer">20 сурагч болгох</button>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Dashboard & Primary CTA (5 cols on lg) -->
+            <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+                
+                <!-- Live Preview Card -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-heading font-bold text-lg text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-600"></i>
+                            Шууд тооцоолол
+                        </h2>
+                        <span id="live-status-pill" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                            Дүн хүлээгдэж байна
+                        </span>
+                    </div>
+
+                    <!-- Big Live Average Display -->
+                    <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white text-center relative overflow-hidden mb-5 shadow-inner">
+                        <div class="absolute -right-6 -top-6 w-28 h-28 bg-indigo-500/20 rounded-full blur-xl"></div>
+                        <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-violet-500/20 rounded-full blur-xl"></div>
+                        
+                        <p class="text-xs uppercase tracking-widest text-indigo-200 font-bold mb-1">Ангийн дундаж гүйцэтгэл</p>
+                        <div class="flex items-baseline justify-center gap-1 my-1">
+                            <span id="live-average-value" class="font-heading font-extrabold text-5xl sm:text-6xl tracking-tight text-white">0.0</span>
+                            <span class="text-2xl font-bold text-indigo-300">%</span>
+                        </div>
+                        <p id="live-entered-count" class="text-xs text-slate-300 mt-2">
+                            0 / 20 сурагчийн дүн орсон байна
+                        </p>
+                    </div>
+
+                    <!-- Mini Stats Grid -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-center">
+                            <div class="text-xs text-slate-500 font-semibold mb-0.5">Дүн орсон</div>
+                            <div id="stat-evaluated" class="font-heading font-extrabold text-lg text-slate-800">0</div>
+                        </div>
+                        <div class="bg-emerald-50/70 rounded-2xl p-3 border border-emerald-100 text-center">
+                            <div class="text-xs text-emerald-700 font-semibold mb-0.5">Хамгийн өндөр</div>
+                            <div id="stat-highest" class="font-heading font-extrabold text-lg text-emerald-700">-</div>
+                        </div>
+                        <div class="bg-amber-50/70 rounded-2xl p-3 border border-amber-100 text-center">
+                            <div class="text-xs text-amber-700 font-semibold mb-0.5">Хамгийн бага</div>
+                            <div id="stat-lowest" class="font-heading font-extrabold text-lg text-amber-700">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Distribution Chart -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-2.5">
+                            <span>Гүйцэтгэлийн түвшний хуваарилалт</span>
+                            <span class="text-slate-400">Сурагчийн тоо</span>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <!-- 80-100% Bar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-emerald-700 flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        Өндөр (80 - 100%)
+                                    </span>
+                                    <span id="dist-high-label" class="text-slate-700 font-bold">0 сурагч (0%)</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="dist-high-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- 60-79% Bar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-blue-700 flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                        Дундаж (60 - 79%)
+                                    </span>
+                                    <span id="dist-mid-label" class="text-slate-700 font-bold">0 сурагч (0%)</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="dist-mid-bar" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- <60% Bar -->
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-rose-700 flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                                        Анхаарах (&lt; 60%)
+                                    </span>
+                                    <span id="dist-low-label" class="text-slate-700 font-bold">0 сурагч (0%)</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div id="dist-low-bar" class="h-full bg-rose-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prominent Evaluation CTA Button -->
+                    <button onclick="evaluateAndShowResult()" class="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-heading font-extrabold text-base sm:text-lg rounded-2xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-pink-200 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-3 cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                        <span>Үнэлгээний үр дүн харах</span>
+                    </button>
+                </div>
+
+                <!-- Criteria Legend Card -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5">
+                    <h3 class="font-heading font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-indigo-500"></i>
+                        Үнэлгээний шалгуур
+                    </h3>
+                    <div class="space-y-2.5 text-xs">
+                        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-100">
+                            <span class="font-bold text-emerald-700 shrink-0 mt-0.5">80 - 100%:</span>
+                            <span class="text-emerald-900 font-medium">«Бүгд чадлаа! Баяр хүргэе! 🎉» + Сүртэй баярын салют</span>
+                        </div>
+                        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-blue-50/80 border border-blue-100">
+                            <span class="font-bold text-blue-700 shrink-0 mt-0.5">60 - 79%:</span>
+                            <span class="text-blue-900 font-medium">«Сайн байна, хичээгээрэй! ✨» + Өнгөлөг баярын салют</span>
+                        </div>
+                        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-rose-50/80 border border-rose-100">
+                            <span class="font-bold text-rose-700 shrink-0 mt-0.5">60% доош:</span>
+                            <span class="text-rose-900 font-medium">«Хичээлээ анхааралтай сайн хийгээрэй, сайн сураарай! 📚»</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- RESULT CELEBRATION / ENCOURAGEMENT MODAL -->
+    <div id="result-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md transition-opacity overflow-y-auto">
+        <div id="result-card" class="relative w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden animate-pop-in bg-white border-4 border-white my-auto">
+            
+            <!-- Close Button -->
+            <button onclick="closeResultModal()" title="Хаах" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/25 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer backdrop-blur-sm">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Topic Ribbon Badge -->
+            <div class="absolute top-4 left-4 z-30 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/25 backdrop-blur-md text-white text-xs font-extrabold border border-white/25 shadow-sm">
+                <i class="fa-solid fa-layer-group text-amber-300"></i>
+                <span>Сэдэв: Зургийн давхарга</span>
+            </div>
+
+            <!-- Dynamic Theme Header Banner -->
+            <div id="modal-banner" class="px-6 pt-14 pb-8 text-center text-white relative overflow-hidden">
+                <!-- Shimmer Effect -->
+                <div class="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/15 to-transparent animate-shimmer pointer-events-none"></div>
+
+                <!-- Decorative background shapes -->
+                <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                    <div class="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-white blur-xl"></div>
+                    <div class="absolute -bottom-14 -right-14 w-56 h-56 rounded-full bg-yellow-200 blur-xl"></div>
+                </div>
+
+                <!-- Bespoke Rich SVG Illustration Container -->
+                <div id="modal-illustration" class="relative z-10 w-44 h-36 sm:w-52 sm:h-40 mx-auto mb-3 animate-float drop-shadow-xl flex items-center justify-center">
+                    <!-- Dynamic rich SVG inserted via JS -->
+                </div>
+
+                <!-- Score Pill -->
+                <div class="relative z-10 inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-black/25 backdrop-blur-md text-sm sm:text-base font-extrabold mb-3 border border-white/30 shadow-inner">
+                    <span class="text-white/90">Ангийн дундаж гүйцэтгэл:</span>
+                    <span id="modal-score-badge" class="text-xl sm:text-2xl font-black text-amber-200">92.5%</span>
+                </div>
+
+                <!-- Main Evaluation Message -->
+                <h2 id="modal-message" class="relative z-10 font-heading font-extrabold text-2xl sm:text-3xl md:text-4xl leading-tight tracking-tight drop-shadow-md px-2">
+                    Бүгд чадлаа! Баяр хүргэе! 🎉
+                </h2>
+            </div>
+
+            <!-- Modal Body Details -->
+            <div class="p-6 sm:p-7 bg-white">
+                <p id="modal-subtext" class="text-center text-slate-600 text-sm sm:text-base font-semibold mb-6 leading-relaxed">
+                    «Зургийн давхарга» сэдвийн хүрээнд ангийн нийт сурагчид маш өндөр гүйцэтгэл үзүүллээ. Багш болон сурагчдадаа халуун баяр хүргэе!
+                </p>
+
+                <!-- Summary Stats Row -->
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 rounded-2xl p-3.5 text-center border border-slate-200/70">
+                        <div class="text-xs text-slate-500 font-bold">Үнэлэгдсэн</div>
+                        <div id="modal-total-students" class="font-heading font-extrabold text-lg sm:text-xl text-slate-800 mt-0.5">20 сурагч</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-emerald-50 to-emerald-100/50 rounded-2xl p-3.5 text-center border border-emerald-200/70">
+                        <div class="text-xs text-emerald-700 font-bold">Дээд оноо</div>
+                        <div id="modal-max-score" class="font-heading font-extrabold text-lg sm:text-xl text-emerald-600 mt-0.5">100%</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-amber-50 to-amber-100/50 rounded-2xl p-3.5 text-center border border-amber-200/70">
+                        <div class="text-xs text-amber-700 font-bold">Доод оноо</div>
+                        <div id="modal-min-score" class="font-heading font-extrabold text-lg sm:text-xl text-amber-600 mt-0.5">75%</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons inside Modal -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="relaunch-fireworks-btn" onclick="launchCelebrationFireworks()" class="hidden flex-1 py-3.5 px-5 bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 hover:from-amber-600 hover:via-orange-600 hover:to-pink-600 text-white font-heading font-extrabold text-sm sm:text-base rounded-2xl shadow-lg shadow-orange-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-fire text-lg"></i>
+                        <span>Салют дахин буудуулах</span>
+                    </button>
+
+                    <button onclick="closeResultModal()" class="flex-1 py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-heading font-extrabold text-sm sm:text-base rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Хаах</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK PASTE SCORES MODAL -->
+    <div id="bulk-paste-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="relative w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-slate-200 overflow-hidden animate-pop-in">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-paste"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-heading font-bold text-base text-slate-800">Оноо олноор хуулах / оруулах</h3>
+                        <p class="text-xs text-slate-500">Excel, Google Sheets-ээс хуулсан оноогоо доор буулгана уу</p>
+                    </div>
+                </div>
+                <button onclick="closeBulkPasteModal()" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-500 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <label for="bulk-scores-textarea" class="block text-xs font-bold text-slate-600 mb-2">
+                    Мөр бүрт нэг оноо эсвэл таслал/зайгаар тусгаарлан оруулна уу (Жишээ: 95, 88, 76, 100...):
+                </label>
+                <textarea id="bulk-scores-textarea" rows="7" placeholder="95&#10;88&#10;76&#10;92&#10;84..." class="w-full p-3.5 text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"></textarea>
+                <div class="mt-4 flex items-center justify-end gap-2.5">
+                    <button onclick="closeBulkPasteModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm cursor-pointer">
+                        Болих
+                    </button>
+                    <button onclick="applyBulkScores()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Оноонуудыг оруулах</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        let students = [];
+        const DEFAULT_STUDENT_COUNT = 20;
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        const SAMPLE_NAMES = [
+            "Б. Анужин", "Г. Тэмүүлэн", "Д. Мишээл", "Э. Билгүүн", "О. Номин-Эрдэнэ",
+            "С. Төгөлдөр", "Н. Энхжин", "Ц. Хангай", "М. Солонго", "Л. Эрхэмбаяр",
+            "Ж. Хулан", "П. Ананд", "Т. Уянга", "Х. Чингүүн", "А. Марал",
+            "Б. Дөлгөөн", "Ч. Есүй", "Г. Өсөхбаяр", "Д. Намуун", "Э. Ирмүүн"
+        ];
+
+        // Initialize app once DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initDefaultStudents();
+            setupCanvas();
+        });
+
+        // Initialize 20 student rows
+        function initDefaultStudents() {
+            students = [];
+            for (let i = 1; i <= DEFAULT_STUDENT_COUNT; i++) {
+                students.push({
+                    id: `stu-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+                    name: `Сурагч ${i}`,
+                    score: ''
+                });
+            }
+            renderStudentRows();
+            updateLiveMetrics();
+        }
+
+        // --- UI Rendering (Only called on structural changes, NEVER on typing) ---
+        function renderStudentRows() {
+            const container = document.getElementById('students-container');
+            container.innerHTML = '';
+
+            students.forEach((student, index) => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-2 px-4 sm:px-6 py-2.5 items-center hover:bg-slate-50/90 transition-colors group';
+                row.dataset.rowIndex = index;
+
+                // Col 1: Index Number
+                const colIdx = document.createElement('div');
+                colIdx.className = 'col-span-1 text-center font-bold text-xs sm:text-sm text-slate-400';
+                colIdx.textContent = index + 1;
+
+                // Col 2: Student Name Input
+                const colName = document.createElement('div');
+                colName.className = 'col-span-5 sm:col-span-5';
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.value = student.name;
+                nameInput.placeholder = 'Сурагчийн нэр';
+                nameInput.setAttribute('aria-label', `Сурагч ${index + 1} нэр`);
+                nameInput.className = 'name-input w-full px-3 py-2 text-sm font-semibold text-slate-800 bg-white/70 hover:bg-white focus:bg-white rounded-xl border border-slate-200/70 hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all';
+                nameInput.addEventListener('input', (e) => {
+                    students[index].name = e.target.value;
+                });
+                nameInput.addEventListener('blur', (e) => {
+                    if (!e.target.value.trim()) {
+                        const fallback = `Сурагч ${index + 1}`;
+                        students[index].name = fallback;
+                        e.target.value = fallback;
+                    }
+                });
+                colName.appendChild(nameInput);
+
+                // Col 3: Score Input (type="text" with inputmode="decimal" prevents browser number-input quirks & blocking)
+                const colScore = document.createElement('div');
+                colScore.className = 'col-span-3 sm:col-span-3 flex justify-center';
+                const scoreInput = document.createElement('input');
+                scoreInput.type = 'text';
+                scoreInput.inputMode = 'decimal';
+                scoreInput.autocomplete = 'off';
+                scoreInput.dataset.index = index;
+                scoreInput.value = student.score !== '' && student.score !== null ? String(student.score) : '';
+                scoreInput.placeholder = '0-100';
+                scoreInput.setAttribute('aria-label', `${student.name} оноо`);
+                scoreInput.className = 'score-input w-20 sm:w-24 text-center px-2.5 py-2 text-sm sm:text-base font-extrabold text-slate-900 bg-white focus:bg-indigo-50/30 rounded-xl border-2 border-slate-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all';
+                
+                scoreInput.addEventListener('input', (e) => handleScoreInput(index, e.target));
+                scoreInput.addEventListener('keydown', (e) => handleScoreKeydown(e, index));
+                scoreInput.addEventListener('focus', (e) => e.target.select());
+                colScore.appendChild(scoreInput);
+
+                // Col 4: Grade Badge
+                const colBadge = document.createElement('div');
+                colBadge.className = 'col-span-2 sm:col-span-2 flex justify-center';
+                colBadge.id = `badge-${index}`;
+                colBadge.innerHTML = getGradeBadge(student.score);
+
+                // Col 5: Delete Button
+                const colDel = document.createElement('div');
+                colDel.className = 'col-span-1 flex justify-center';
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.title = 'Устгах';
+                delBtn.className = 'p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
+                delBtn.addEventListener('click', () => removeStudentRow(index));
+                colDel.appendChild(delBtn);
+
+                row.appendChild(colIdx);
+                row.appendChild(colName);
+                row.appendChild(colScore);
+                row.appendChild(colBadge);
+                row.appendChild(colDel);
+
+                container.appendChild(row);
+            });
+
+            document.getElementById('student-count-badge').textContent = `Нийт: ${students.length} сурагч`;
+        }
+
+        // Return status badge HTML based on 0-100 score
+        function getGradeBadge(scoreVal) {
+            if (scoreVal === '' || scoreVal === null || isNaN(scoreVal)) {
+                return `<span class="text-xs font-semibold text-slate-400 px-2.5 py-1 rounded-lg bg-slate-100">-</span>`;
+            }
+            const num = Math.round(Number(scoreVal) * 10) / 10;
+            if (num >= 90) {
+                return `<span class="text-xs font-extrabold text-emerald-700 px-2.5 py-1 rounded-lg bg-emerald-100 border border-emerald-200">A (${num}%)</span>`;
+            } else if (num >= 80) {
+                return `<span class="text-xs font-extrabold text-teal-700 px-2.5 py-1 rounded-lg bg-teal-100 border border-teal-200">B (${num}%)</span>`;
+            } else if (num >= 70) {
+                return `<span class="text-xs font-extrabold text-blue-700 px-2.5 py-1 rounded-lg bg-blue-100 border border-blue-200">C (${num}%)</span>`;
+            } else if (num >= 60) {
+                return `<span class="text-xs font-extrabold text-amber-700 px-2.5 py-1 rounded-lg bg-amber-100 border border-amber-200">D (${num}%)</span>`;
+            } else {
+                return `<span class="text-xs font-extrabold text-rose-700 px-2.5 py-1 rounded-lg bg-rose-100 border border-rose-200">F (${num}%)</span>`;
+            }
+        }
+
+        // --- Input & Row Handlers ---
+        function handleScoreInput(index, inputEl) {
+            // Normalize comma to dot and strip non-numeric characters
+            let raw = inputEl.value.replace(',', '.').replace(/[^0-9.]/g, '');
+            // Prevent multiple decimal points
+            const parts = raw.split('.');
+            if (parts.length > 2) {
+                raw = parts[0] + '.' + parts.slice(1).join('');
+            }
+            if (inputEl.value !== raw) {
+                inputEl.value = raw;
+            }
+
+            if (raw === '' || raw === '.') {
+                students[index].score = '';
+            } else {
+                let num = parseFloat(raw);
+                if (num > 100) {
+                    num = 100;
+                    inputEl.value = '100';
+                    showToast('Дүн 100-аас их байж болохгүй!', 'warning');
+                } else if (num < 0) {
+                    num = 0;
+                    inputEl.value = '0';
+                }
+                students[index].score = num;
+            }
+
+            // Update ONLY this row's badge & live summary metrics (never touch the input DOM)
+            const badgeContainer = document.getElementById(`badge-${index}`);
+            if (badgeContainer) {
+                badgeContainer.innerHTML = getGradeBadge(students[index].score);
+            }
+
+            updateLiveMetrics();
+        }
+
+        // Press Enter, ArrowDown, or ArrowUp to move smoothly between student score inputs
+        function handleScoreKeydown(e, index) {
+            const inputs = document.querySelectorAll('.score-input');
+            if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (index + 1 < inputs.length) {
+                    inputs[index + 1].focus();
+                    inputs[index + 1].select();
+                } else if (e.key === 'Enter') {
+                    evaluateAndShowResult();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (index - 1 >= 0) {
+                    inputs[index - 1].focus();
+                    inputs[index - 1].select();
+                }
+            }
+        }
+
+        // --- Bulk Paste Modal Handlers ---
+        function openBulkPasteModal() {
+            const modal = document.getElementById('bulk-paste-modal');
+            const textarea = document.getElementById('bulk-scores-textarea');
+            textarea.value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => textarea.focus(), 50);
+        }
+
+        function closeBulkPasteModal() {
+            document.getElementById('bulk-paste-modal').classList.add('hidden');
+        }
+
+        function applyBulkScores() {
+            const rawText = document.getElementById('bulk-scores-textarea').value;
+            const tokens = rawText
+                .split(/[\n,;\t\s]+/)
+                .map(t => t.trim().replace('%', '').replace(',', '.'))
+                .filter(t => t !== '');
+
+            const parsedScores = [];
+            for (const token of tokens) {
+                const num = parseFloat(token);
+                if (!isNaN(num)) {
+                    parsedScores.push(Math.min(100, Math.max(0, num)));
+                }
+            }
+
+            if (parsedScores.length === 0) {
+                showToast('Хүчинтэй тоон оноо олдсонгүй!', 'warning');
+                return;
+            }
+
+            // Add extra rows automatically if pasted scores exceed current student count
+            while (students.length < parsedScores.length) {
+                const nextNum = students.length + 1;
+                students.push({
+                    id: `stu-${Date.now()}-${nextNum}`,
+                    name: `Сурагч ${nextNum}`,
+                    score: ''
+                });
+            }
+
+            parsedScores.forEach((val, idx) => {
+                students[idx].score = val;
+            });
+
+            renderStudentRows();
+            updateLiveMetrics();
+            closeBulkPasteModal();
+            showToast(`${parsedScores.length} сурагчийн оноо амжилттай орлоо!`, 'success');
+        }
+
+        function addStudentRow() {
+            const nextNum = students.length + 1;
+            students.push({
+                id: `stu-${Date.now()}-${nextNum}`,
+                name: `Сурагч ${nextNum}`,
+                score: ''
+            });
+            renderStudentRows();
+            updateLiveMetrics();
+            showToast(`Сурагч ${nextNum} нэмэгдлээ.`, 'info');
+        }
+
+        function removeStudentRow(index) {
+            if (students.length <= 1) {
+                showToast('Хамгийн багадаа 1 сурагч байх ёстой.', 'warning');
+                return;
+            }
+            students.splice(index, 1);
+            renderStudentRows();
+            updateLiveMetrics();
+        }
+
+        function resetToTwenty() {
+            initDefaultStudents();
+            showToast('20 сурагчийн жагсаалтыг шинэчиллээ.', 'info');
+        }
+
+        // --- Sample Fill & Clear Controls ---
+        function toggleSampleMenu() {
+            const menu = document.getElementById('sample-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('sample-dropdown-btn');
+            const menu = document.getElementById('sample-menu');
+            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function fillSampleGrades(type) {
+            document.getElementById('sample-menu').classList.add('hidden');
+
+            // Ensure 20 rows if currently empty or modified
+            if (students.length === 0) {
+                initDefaultStudents();
+            }
+
+            students.forEach((student, idx) => {
+                // Optionally populate realistic Mongolian names if default names are still there
+                if (student.name.startsWith('Сурагч ') && SAMPLE_NAMES[idx]) {
+                    student.name = SAMPLE_NAMES[idx];
+                }
+
+                let score = 0;
+                if (type === 'high') {
+                    // Generate scores mostly 82 - 100 so average is >= 80
+                    score = Math.floor(Math.random() * 19) + 82;
+                } else if (type === 'medium') {
+                    // Generate scores 62 - 78 so average is between 60 and 79.9
+                    score = Math.floor(Math.random() * 17) + 62;
+                } else if (type === 'low') {
+                    // Generate scores 35 - 58 so average is < 60
+                    score = Math.floor(Math.random() * 24) + 35;
+                } else {
+                    // Pure random 40 - 100
+                    score = Math.floor(Math.random() * 61) + 40;
+                }
+                student.score = score;
+            });
+
+            renderStudentRows();
+            updateLiveMetrics();
+
+            const labels = {
+                high: 'Өндөр амжилттай (80-100%) жишээ дүн орууллаа.',
+                medium: 'Дундаж амжилттай (60-79%) жишээ дүн орууллаа.',
+                low: 'Анхаарах түвшний (<60%) жишээ дүн орууллаа.',
+                random: 'Санамсаргүй оноог бөглөлөө.'
+            };
+            showToast(labels[type], 'success');
+        }
+
+        function clearAllGrades() {
+            students.forEach((student, idx) => {
+                student.name = `Сурагч ${idx + 1}`;
+                student.score = '';
+            });
+            renderStudentRows();
+            updateLiveMetrics();
+            stopFireworks();
+            showToast('Бүх дүнг цэвэрлэлээ.', 'info');
+        }
+
+        // --- Calculation & Live Metrics ---
+        function calculateStats() {
+            const validScores = students
+                .map(s => s.score)
+                .filter(val => val !== '' && val !== null && !isNaN(val))
+                .map(Number);
+
+            const count = validScores.length;
+            const totalStudents = students.length;
+
+            if (count === 0) {
+                return {
+                    count: 0,
+                    totalStudents,
+                    average: 0,
+                    highest: null,
+                    lowest: null,
+                    highCount: 0,
+                    midCount: 0,
+                    lowCount: 0
+                };
+            }
+
+            const sum = validScores.reduce((acc, curr) => acc + curr, 0);
+            const average = sum / count;
+            const highest = Math.max(...validScores);
+            const lowest = Math.min(...validScores);
+
+            const highCount = validScores.filter(s => s >= 80).length;
+            const midCount = validScores.filter(s => s >= 60 && s < 80).length;
+            const lowCount = validScores.filter(s => s < 60).length;
+
+            return {
+                count,
+                totalStudents,
+                average,
+                highest,
+                lowest,
+                highCount,
+                midCount,
+                lowCount
+            };
+        }
+
+        function updateLiveMetrics() {
+            const stats = calculateStats();
+
+            document.getElementById('live-average-value').textContent = stats.average.toFixed(1);
+            document.getElementById('live-entered-count').textContent = `${stats.count} / ${stats.totalStudents} сурагчийн дүн орсон байна`;
+            document.getElementById('stat-evaluated').textContent = `${stats.count}`;
+            document.getElementById('stat-highest').textContent = stats.highest !== null ? `${stats.highest}%` : '-';
+            document.getElementById('stat-lowest').textContent = stats.lowest !== null ? `${stats.lowest}%` : '-';
+
+            // Update Status Pill
+            const pill = document.getElementById('live-status-pill');
+            if (stats.count === 0) {
+                pill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600';
+                pill.textContent = 'Дүн хүлээгдэж байна';
+            } else if (stats.average >= 80) {
+                pill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700';
+                pill.textContent = 'Онц сайн (80-100%)';
+            } else if (stats.average >= 60) {
+                pill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-700';
+                pill.textContent = 'Боломжийн (60-79%)';
+            } else {
+                pill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-700';
+                pill.textContent = 'Анхаарах (<60%)';
+            }
+
+            // Update Distribution Bars
+            const denom = stats.count || 1;
+            const highPct = stats.count ? Math.round((stats.highCount / denom) * 100) : 0;
+            const midPct = stats.count ? Math.round((stats.midCount / denom) * 100) : 0;
+            const lowPct = stats.count ? Math.round((stats.lowCount / denom) * 100) : 0;
+
+            document.getElementById('dist-high-label').textContent = `${stats.highCount} сурагч (${highPct}%)`;
+            document.getElementById('dist-high-bar').style.width = `${highPct}%`;
+
+            document.getElementById('dist-mid-label').textContent = `${stats.midCount} сурагч (${midPct}%)`;
+            document.getElementById('dist-mid-bar').style.width = `${midPct}%`;
+
+            document.getElementById('dist-low-label').textContent = `${stats.lowCount} сурагч (${lowPct}%)`;
+            document.getElementById('dist-low-bar').style.width = `${lowPct}%`;
+        }
+
+        // --- Evaluate & Show Result Modal ---
+        function getBespokeIllustration(tier) {
+            if (tier === 'high') {
+                // High Tier (80-100%): Golden Trophy + Stacked Vibrant Image Layers + Shining Stars
+                return `
+                <svg viewBox="0 0 240 190" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Glowing Aura -->
+                    <circle cx="120" cy="95" r="78" fill="url(#goldGlow)" opacity="0.45"/>
+                    <!-- Decorative Stacked Graphic Layers (Back) -->
+                    <g transform="translate(26, 48) rotate(-12)">
+                        <rect x="0" y="34" width="68" height="48" rx="10" fill="#EC4899" stroke="#FFF" stroke-width="2.5"/>
+                        <rect x="8" y="18" width="68" height="48" rx="10" fill="#38BDF8" stroke="#FFF" stroke-width="2.5"/>
+                        <rect x="16" y="2" width="68" height="48" rx="10" fill="#FDE047" stroke="#FFF" stroke-width="2.5"/>
+                        <circle cx="36" cy="20" r="6" fill="#F97316"/>
+                        <path d="M24 40L40 25L54 37L64 29L76 40H24Z" fill="#10B981"/>
+                    </g>
+                    <!-- Decorative Color Swatch / Layer Panel (Right) -->
+                    <g transform="translate(152, 52) rotate(12)">
+                        <rect x="0" y="0" width="62" height="74" rx="12" fill="#FFFFFF" fill-opacity="0.95" stroke="#FDE047" stroke-width="2.5"/>
+                        <rect x="9" y="10" width="44" height="14" rx="5" fill="#8B5CF6"/>
+                        <rect x="9" y="30" width="44" height="14" rx="5" fill="#10B981"/>
+                        <rect x="9" y="50" width="44" height="14" rx="5" fill="#F59E0B"/>
+                    </g>
+                    <!-- Center Golden Trophy -->
+                    <path d="M92 42H148V82C148 99.6731 135.464 114 120 114C104.536 114 92 99.6731 92 82V42Z" fill="url(#trophyGrad)" stroke="#FFF" stroke-width="3"/>
+                    <path d="M92 52H76C71.5817 52 68 55.5817 68 60V68C68 77.9411 76.0589 86 86 86H92" stroke="#FDE047" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M148 52H164C168.418 52 172 55.5817 172 60V68C172 77.9411 163.941 86 154 86H148" stroke="#FDE047" stroke-width="5" stroke-linecap="round"/>
+                    <rect x="112" y="114" width="16" height="24" fill="#F59E0B"/>
+                    <rect x="94" y="136" width="52" height="12" rx="6" fill="#FDE047" stroke="#FFF" stroke-width="2"/>
+                    <rect x="86" y="148" width="68" height="14" rx="7" fill="#1E293B" stroke="#FDE047" stroke-width="2"/>
+                    <!-- Star on Trophy -->
+                    <path d="M120 56L124.5 66.5L136 67.8L127.4 75.5L129.8 86.8L120 81L110.2 86.8L112.6 75.5L104 67.8L115.5 66.5L120 56Z" fill="#FFF"/>
+                    <!-- Floating Sparkles -->
+                    <path d="M120 10L123 19L132 22L123 25L120 34L117 25L108 22L117 19L120 10Z" fill="#FEF08A"/>
+                    <circle cx="62" cy="30" r="4" fill="#FDE047"/>
+                    <circle cx="182" cy="28" r="5" fill="#6EE7B7"/>
+                    <circle cx="195" cy="135" r="4" fill="#F472B6"/>
+                    <defs>
+                        <radialGradient id="goldGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 95) rotate(90) scale(78)">
+                            <stop stop-color="#FEF08A"/>
+                            <stop offset="1" stop-color="#F59E0B" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="trophyGrad" x1="92" y1="42" x2="148" y2="114" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#FEF08A"/>
+                            <stop offset="0.5" stop-color="#FBBF24"/>
+                            <stop offset="1" stop-color="#D97706"/>
+                        </linearGradient>
+                    </defs>
+                </svg>`;
+            } else if (tier === 'medium') {
+                // Medium Tier (60-79.9%): Creative Image Layers + Rising Star Medal & Palette
+                return `
+                <svg viewBox="0 0 240 190" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="120" cy="95" r="74" fill="#38BDF8" opacity="0.25"/>
+                    <!-- Stacked Colorful Art Layers -->
+                    <g transform="translate(52, 42)">
+                        <rect x="0" y="44" width="110" height="68" rx="14" fill="#F43F5E" stroke="#FFF" stroke-width="2.5"/>
+                        <rect x="14" y="24" width="110" height="68" rx="14" fill="#38BDF8" stroke="#FFF" stroke-width="2.5"/>
+                        <rect x="28" y="4" width="110" height="68" rx="14" fill="#FBBF24" stroke="#FFF" stroke-width="2.5"/>
+                        <!-- Landscape inside top layer -->
+                        <circle cx="54" cy="24" r="8" fill="#FFF"/>
+                        <path d="M40 58L66 32L88 52L106 38L126 58H40Z" fill="#10B981"/>
+                    </g>
+                    <!-- Rising Star Badge -->
+                    <g transform="translate(142, 86)">
+                        <circle cx="32" cy="32" r="28" fill="#4F46E5" stroke="#FDE047" stroke-width="3.5"/>
+                        <path d="M32 13L37.5 24.5L50 26.2L40.8 35L43 47.5L32 41.5L21 47.5L23.2 35L14 26.2L26.5 24.5L32 13Z" fill="#FDE047"/>
+                    </g>
+                    <!-- Sparkles -->
+                    <path d="M44 26L47 34L55 37L47 40L44 48L41 40L33 37L41 34L44 26Z" fill="#FDE047"/>
+                    <path d="M196 34L198 40L204 42L198 44L196 50L194 44L188 42L194 40L196 34Z" fill="#BAE6FD"/>
+                </svg>`;
+            } else {
+                // Low Tier (<60%): Encouraging Study Book + Glowing Idea Lightbulb + Image Layers
+                return `
+                <svg viewBox="0 0 240 190" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="120" cy="95" r="74" fill="#818CF8" opacity="0.22"/>
+                    <!-- Mini Layer Cards Floating Above Book -->
+                    <g transform="translate(76, 18)">
+                        <rect x="0" y="16" width="54" height="34" rx="8" fill="#F472B6" stroke="#FFF" stroke-width="2"/>
+                        <rect x="14" y="8" width="54" height="34" rx="8" fill="#38BDF8" stroke="#FFF" stroke-width="2"/>
+                        <rect x="28" y="0" width="54" height="34" rx="8" fill="#FDE047" stroke="#FFF" stroke-width="2"/>
+                        <circle cx="44" cy="12" r="4" fill="#F97316"/>
+                        <path d="M36 26L48 15L58 23L66 17L74 26H36Z" fill="#10B981"/>
+                    </g>
+                    <!-- Open Book -->
+                    <path d="M44 82C44 76.4772 48.4772 72 54 72H112C116.418 72 120 75.5817 120 80V146C120 142.686 117.314 140 114 140H54C48.4772 140 44 135.523 44 130V82Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2.5"/>
+                    <path d="M196 82C196 76.4772 191.523 72 186 72H128C123.582 72 120 75.5817 120 80V146C120 142.686 122.686 140 126 140H186C191.523 140 196 135.523 196 130V82Z" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2.5"/>
+                    <!-- Book Lines -->
+                    <rect x="58" y="88" width="46" height="6" rx="3" fill="#94A3B8"/>
+                    <rect x="58" y="102" width="38" height="6" rx="3" fill="#CBD5E1"/>
+                    <rect x="58" y="116" width="42" height="6" rx="3" fill="#CBD5E1"/>
+                    <rect x="136" y="88" width="46" height="6" rx="3" fill="#818CF8"/>
+                    <rect x="136" y="102" width="40" height="6" rx="3" fill="#CBD5E1"/>
+                    <rect x="136" y="116" width="34" height="6" rx="3" fill="#CBD5E1"/>
+                    <!-- Glowing Lightbulb Badge -->
+                    <circle cx="176" cy="54" r="22" fill="#FBBF24" stroke="#FFF" stroke-width="3"/>
+                    <path d="M176 42C170.477 42 166 46.4772 166 52C166 55.6 167.9 58.7 170.8 60.5C171.5 61 172 61.8 172 62.6V64H180V62.6C180 61.8 180.5 61 181.2 60.5C184.1 58.7 186 55.6 186 52C186 46.4772 181.523 42 176 42Z" fill="#FFF"/>
+                    <rect x="172" y="66" width="8" height="3" rx="1.5" fill="#78350F"/>
+                </svg>`;
+            }
+        }
+
+        function evaluateAndShowResult() {
+            const stats = calculateStats();
+
+            if (stats.count === 0) {
+                showToast('Эхлээд дор хаяж нэг сурагчийн дүнг оруулна уу!', 'warning');
+                const firstInput = document.querySelector('.score-input');
+                if (firstInput) firstInput.focus();
+                return;
+            }
+
+            const avg = stats.average;
+            const banner = document.getElementById('modal-banner');
+            const illustrationEl = document.getElementById('modal-illustration');
+            const scoreBadge = document.getElementById('modal-score-badge');
+            const messageEl = document.getElementById('modal-message');
+            const subtextEl = document.getElementById('modal-subtext');
+            const relaunchBtn = document.getElementById('relaunch-fireworks-btn');
+            const resultCard = document.getElementById('result-card');
+
+            scoreBadge.textContent = `${avg.toFixed(1)}%`;
+            document.getElementById('modal-total-students').textContent = `${stats.count} сурагч`;
+            document.getElementById('modal-max-score').textContent = `${stats.highest}%`;
+            document.getElementById('modal-min-score').textContent = `${stats.lowest}%`;
+
+            // Reset classes
+            resultCard.classList.remove('glow-gold');
+
+            if (avg >= 80) {
+                // 80 - 100%: Vibrant Gold, Emerald & Rainbow Celebration + Grand Fireworks
+                banner.className = 'px-6 pt-14 pb-8 text-center text-white relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-amber-500';
+                illustrationEl.innerHTML = getBespokeIllustration('high');
+                messageEl.textContent = 'Бүгд чадлаа! Баяр хүргэе! 🎉';
+                subtextEl.textContent = 'Гайхалтай үр дүн! «Зургийн давхарга» сэдвийн гүйцэтгэл 80%-иас дээш гарч, бүх сурагчид маань хичээл зүтгэл, бүтээлч чадвараа баталлаа.';
+                relaunchBtn.classList.remove('hidden');
+                resultCard.classList.add('glow-gold');
+
+                openModal();
+                playCelebrationSound('high');
+                launchCelebrationFireworks('gold');
+
+            } else if (avg >= 60) {
+                // 60 - 79.99%: Bright Sky-Blue, Indigo & Coral Theme + Colorful Fireworks
+                banner.className = 'px-6 pt-14 pb-8 text-center text-white relative overflow-hidden bg-gradient-to-br from-sky-500 via-indigo-600 to-amber-500';
+                illustrationEl.innerHTML = getBespokeIllustration('medium');
+                messageEl.textContent = 'Сайн байна, хичээгээрэй! ✨';
+                subtextEl.textContent = 'Боломжийн сайхан амжилт байна! «Зургийн давхарга» хичээлээ улам бататгаж, дараагийн удаа 80%-иас дээш гүйцэтгэл үзүүлээрэй.';
+                relaunchBtn.classList.remove('hidden');
+
+                openModal();
+                playCelebrationSound('medium');
+                launchCelebrationFireworks('blue');
+
+            } else {
+                // Below 60%: Supportive Warm Indigo/Rose Theme + Study Illustration (No Fireworks)
+                banner.className = 'px-6 pt-14 pb-8 text-center text-white relative overflow-hidden bg-gradient-to-br from-indigo-700 via-purple-700 to-rose-600';
+                illustrationEl.innerHTML = getBespokeIllustration('low');
+                messageEl.textContent = 'Хичээлээ анхааралтай сайн хийгээрэй, сайн сураарай! 📚';
+                subtextEl.textContent = 'Сэтгэлээр унах хэрэггүй ээ! «Зургийн давхарга» сэдвийн үндсэн ойлголтуудаа сэргээн давтаж, дасгал ажлаа сайн хийвэл амжилт заавал ирнэ.';
+                relaunchBtn.classList.add('hidden');
+
+                stopFireworks();
+                openModal();
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.add('hidden');
+            stopFireworks();
+        }
+
+        // --- Web Audio API Sound Effects (Optional Toggle) ---
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const label = document.getElementById('sound-label');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-amber-600';
+                label.textContent = 'Дуу: Асаалттай';
+                showToast('Салютын дуу аслаа.', 'info');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+                label.textContent = 'Дуу: Хаалттай';
+                showToast('Салютын дуу хаагдлаа.', 'info');
+            }
+        }
+
+        function playCelebrationSound(tier) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const notes = tier === 'high' 
+                    ? [523.25, 659.25, 783.99, 1046.50, 1318.51] 
+                    : [440, 554.37, 659.25, 880];
+
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.11);
+
+                    gain.gain.setValueAtTime(0.001, audioCtx.currentTime + idx * 0.11);
+                    gain.gain.exponentialRampToValueAtTime(0.14, audioCtx.currentTime + idx * 0.11 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.11 + 0.45);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + idx * 0.11);
+                    osc.stop(audioCtx.currentTime + idx * 0.11 + 0.48);
+                });
+            } catch (e) {
+                // Ignore audio errors if blocked by browser autoplay policy
+            }
+        }
+
+        function playFireworkPopSound() {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const bufferSize = audioCtx.sampleRate * 0.18;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.04));
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 600 + Math.random() * 500;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start();
+            } catch (e) {}
+        }
+
+        // --- Grand Multi-Burst HTML5 Canvas Fireworks + Confetti ---
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let rockets = [];
+        let sparkles = [];
+        let fireworksAnimationId = null;
+        let fireworkInterval = null;
+        let currentTheme = 'gold';
+
+        function setupCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        class Rocket {
+            constructor(theme) {
+                this.x = Math.random() * (canvas.width * 0.84) + canvas.width * 0.08;
+                this.y = canvas.height + 10;
+                this.targetY = Math.random() * (canvas.height * 0.42) + canvas.height * 0.10;
+                this.speed = Math.random() * 4.5 + 8.5;
+                this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.28;
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+                this.theme = theme;
+                this.color = this.pickColor();
+                this.secondaryColor = this.pickColor();
+                this.trail = [];
+                this.isGrand = theme === 'gold' && Math.random() > 0.35;
+            }
+
+            pickColor() {
+                const goldPalette = ['#fde047', '#fbbf24', '#34d399', '#f472b6', '#38bdf8', '#fb923c', '#ffffff'];
+                const bluePalette = ['#38bdf8', '#60a5fa', '#fde047', '#c084fc', '#34d399', '#fb7185'];
+                const palette = this.theme === 'gold' ? goldPalette : bluePalette;
+                return palette[Math.floor(Math.random() * palette.length)];
+            }
+
+            update() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 9) this.trail.shift();
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.09; // gravity
+
+                if (this.y <= this.targetY || this.vy >= 0) {
+                    this.explode();
+                    return false;
+                }
+                return true;
+            }
+
+            draw() {
+                ctx.save();
+                for (let i = 0; i < this.trail.length; i++) {
+                    const pt = this.trail[i];
+                    const ratio = (i + 1) / this.trail.length;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, ratio * 3.2, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = ratio * 0.85;
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            explode() {
+                playFireworkPopSound();
+                const particleCount = this.isGrand ? 110 : 75;
+
+                // Outer ring burst
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 / particleCount) * i + (Math.random() - 0.5) * 0.15;
+                    const speed = (this.isGrand ? Math.random() * 6.5 + 2.5 : Math.random() * 5 + 2);
+                    const color = i % 3 === 0 ? this.secondaryColor : this.color;
+                    particles.push(new Particle(this.x, this.y, angle, speed, color, this.isGrand));
+                }
+
+                // Inner crackling core burst for grand fireworks
+                if (this.isGrand) {
+                    for (let j = 0; j < 32; j++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = Math.random() * 2.8 + 0.8;
+                        particles.push(new Particle(this.x, this.y, angle, speed, '#ffffff', false));
+                    }
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, angle, speed, color, canCrack) {
+                this.x = x;
+                this.y = y;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.013 + 0.009;
+                this.size = Math.random() * 3.4 + 1.8;
+                this.history = [];
+                this.canCrack = canCrack && Math.random() > 0.72;
+                this.cracked = false;
+            }
+
+            update() {
+                this.history.push({ x: this.x, y: this.y });
+                if (this.history.length > 5) this.history.shift();
+
+                this.vx *= 0.955; // air resistance
+                this.vy *= 0.955;
+                this.vy += 0.065; // gravity
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+
+                // Secondary crackling sparks mid-fall
+                if (this.canCrack && !this.cracked && this.alpha < 0.48) {
+                    this.cracked = true;
+                    for (let k = 0; k < 5; k++) {
+                        const a = Math.random() * Math.PI * 2;
+                        const s = Math.random() * 2 + 0.8;
+                        sparkles.push(new Sparkle(this.x, this.y, a, s, '#fef08a'));
+                    }
+                }
+
+                return this.alpha > 0;
+            }
+
+            draw() {
+                ctx.save();
+                // Draw glowing motion trail
+                if (this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let i = 1; i < this.history.length; i++) {
+                        ctx.lineTo(this.history[i].x, this.history[i].y);
+                    }
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = this.size * 0.85;
+                    ctx.globalAlpha = Math.max(0, this.alpha * 0.45);
+                    ctx.stroke();
+                }
+
+                // Draw bright glowing head
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Sparkle {
+            constructor(x, y, angle, speed, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = 0.035;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+                return this.alpha > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - 1.5, this.y - 1.5, 3, 3);
+                ctx.restore();
+            }
+        }
+
+        function animateFireworks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            rockets = rockets.filter(r => {
+                r.draw();
+                return r.update();
+            });
+
+            particles = particles.filter(p => {
+                p.draw();
+                return p.update();
+            });
+
+            sparkles = sparkles.filter(s => {
+                s.draw();
+                return s.update();
+            });
+
+            if (rockets.length > 0 || particles.length > 0 || sparkles.length > 0 || fireworkInterval !== null) {
+                fireworksAnimationId = requestAnimationFrame(animateFireworks);
+            } else {
+                fireworksAnimationId = null;
+            }
+        }
+
+        function launchCelebrationFireworks(themeOverride) {
+            if (themeOverride) currentTheme = themeOverride;
+            stopFireworks();
+
+            const isGold = currentTheme === 'gold';
+
+            // Trigger rich multi-angle canvas-confetti bursts
+            if (typeof confetti === 'function') {
+                const colors = isGold 
+                    ? ['#fde047', '#10b981', '#f59e0b', '#ec4899', '#38bdf8', '#ffffff'] 
+                    : ['#38bdf8', '#fbbf24', '#8b5cf6', '#34d399', '#f472b6'];
+
+                confetti({
+                    particleCount: isGold ? 110 : 75,
+                    angle: 60,
+                    spread: 75,
+                    origin: { x: 0, y: 0.68 },
+                    colors: colors,
+                    zIndex: 70
+                });
+                confetti({
+                    particleCount: isGold ? 110 : 75,
+                    angle: 120,
+                    spread: 75,
+                    origin: { x: 1, y: 0.68 },
+                    colors: colors,
+                    zIndex: 70
+                });
+
+                if (isGold) {
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 90,
+                            spread: 110,
+                            origin: { x: 0.5, y: 0.35 },
+                            colors: colors,
+                            zIndex: 70
+                        });
+                    }, 500);
+                }
+            }
+
+            // Launch initial grand volley of rockets
+            const initialVolley = isGold ? 6 : 4;
+            for (let i = 0; i < initialVolley; i++) {
+                setTimeout(() => {
+                    rockets.push(new Rocket(currentTheme));
+                    if (!fireworksAnimationId) animateFireworks();
+                }, i * 180);
+            }
+
+            // Continuous grand fireworks show for 6 seconds
+            let elapsed = 0;
+            const duration = isGold ? 6200 : 4800;
+            const intervalMs = isGold ? 360 : 450;
+
+            fireworkInterval = setInterval(() => {
+                elapsed += intervalMs;
+                rockets.push(new Rocket(currentTheme));
+                if (isGold || Math.random() > 0.45) {
+                    rockets.push(new Rocket(currentTheme));
+                }
+                if (!fireworksAnimationId) animateFireworks();
+
+                if (elapsed >= duration) {
+                    clearInterval(fireworkInterval);
+                    fireworkInterval = null;
+                }
+            }, intervalMs);
+        }
+
+        function stopFireworks() {
+            if (fireworkInterval) {
+                clearInterval(fireworkInterval);
+                fireworkInterval = null;
+            }
+            rockets = [];
+            particles = [];
+            sparkles = [];
+            if (fireworksAnimationId) {
+                cancelAnimationFrame(fireworksAnimationId);
+                fireworksAnimationId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- Utility Functions ---
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Custom Toast Notification (Never use alert())
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const styles = {
+                info: 'bg-slate-800 text-white border-slate-700',
+                success: 'bg-emerald-600 text-white border-emerald-500',
+                warning: 'bg-amber-500 text-white border-amber-400'
+            };
+
+            const icons = {
+                info: 'fa-circle-info',
+                success: 'fa-circle-check',
+                warning: 'fa-triangle-exclamation'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg border text-sm font-semibold transform transition-all duration-300 translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
